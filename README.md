@@ -1,0 +1,2 @@
+# Stage Ranking
+To test the latest version of the mod, copy the contents of [this folder](https://github.com/DS-GAMING-SE/StageRankingRoR2/tree/master/Thunderstore/StageRankingLatest/plugins) into your modded profile's BepInEx -> plugins folder.
