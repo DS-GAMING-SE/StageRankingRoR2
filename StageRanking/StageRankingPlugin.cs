@@ -13,7 +13,7 @@ namespace StageRanking
     [R2API.Utils.NetworkCompatibility(R2API.Utils.CompatibilityLevel.NoNeedForSync)]
     public class StageRankingPlugin : BaseUnityPlugin
     {
-        public const string PluginGUID = PluginAuthor + "." + PluginName;
+        public const string PluginGUID = "com."+PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "StageRanking";
         public const string PluginVersion = "1.0.0";
@@ -26,6 +26,8 @@ namespace StageRanking
             Log.Init(Logger);
 
             StageRankingTracker.Initialize();
+
+            StageRankingPanel.Initialize();
 
             OnHooks.Initialize();
 

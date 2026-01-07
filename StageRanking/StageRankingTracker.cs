@@ -12,10 +12,10 @@ namespace StageRanking
     {
         public delegate void StageRankingEventHandler(List<Score> scores);
 
-        public static event StageRankingEventHandler OnStageRankingEvent;
+        public static event StageRankingEventHandler OnStageRankingGatherScores;
         public static void Initialize()
         {
-            OnStageRankingEvent += DefaultScores;
+            OnStageRankingGatherScores += DefaultScores;
         }
 
         private static void DefaultScores(List<Score> scores)
@@ -23,10 +23,20 @@ namespace StageRanking
             #region Time Score
             if (Run.instance && Stage.instance && Stage.instance.entryStopwatchValue != Run.instance.GetRunStopwatch())
             {
-                scores.Add(new Score { nameToken = "DS_GAMING_STAGE_RANKING_TIME_SCORE", 
-                    score = Util.ClampedNonlinearLerp(0, Config.MaxTimeScore().Value,
-                    (1 - ((Run.instance.GetRunStopwatch() - Stage.instance.entryStopwatchValue) - Config.TimeForMaxTimeScore().Value) / Config.TimeForMinTimeScore().Value), 2f)
-                });
+                if (Config.TimeForMaxTimeScore().Value < Config.TimeForMinTimeScore().Value)
+                {
+                    scores.Add(new Score
+                    {
+                        nameToken = "DS_GAMING_STAGE_RANKING_TIME_SCORE",
+                        score = Util.ClampedNonlinearLerp(0, Config.MaxTimeScore().Value,
+                    (1 - ((Run.instance.GetRunStopwatch() - Stage.instance.entryStopwatchValue) - Config.TimeForMaxTimeScore().Value) / Config.TimeForMinTimeScore().Value), 1.5f),
+                        addedScoreRequirement = Config.MaxTimeScore().Value
+                    });
+                }
+                else
+                {
+                    Log.Error("Time Score's Worst Time cannot be lower than Best Time");
+                }
             }
             #endregion
             #region Loot Score
@@ -42,7 +52,8 @@ namespace StageRanking
                 scores.Add(new Score
                 {
                     nameToken = "DS_GAMING_STAGE_RANKING_LOOT_SCORE",
-                    score = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 2f)
+                    score = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 2f),
+                    addedScoreRequirement = Config.MaxLootScore().Value
                 });
             }
             #endregion
@@ -50,7 +61,9 @@ namespace StageRanking
             if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0)
             {
                 scores.Add(new Score { nameToken = "DS_GAMING_STAGE_RANKING_MOUNTAIN_SHRINE_SCORE", 
-                    score = (int)Math.Ceiling(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic(TeleporterInteraction.instance.shrineBonusStacks / 2f)) });
+                    score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic(TeleporterInteraction.instance.shrineBonusStacks / 2f)),
+                    addedScoreRequirement = 0
+                });
             }
             #endregion
         }
@@ -58,9 +71,9 @@ namespace StageRanking
         public static void CreateRanking()
         {
             List<Score> finalScores = new();
-            if (OnStageRankingEvent != null)
+            if (OnStageRankingGatherScores != null)
             {
-                foreach (StageRankingEventHandler @event in OnStageRankingEvent.GetInvocationList().Cast<StageRankingEventHandler>())
+                foreach (StageRankingEventHandler @event in OnStageRankingGatherScores.GetInvocationList().Cast<StageRankingEventHandler>())
                 {
                     try
                     {
@@ -83,6 +96,7 @@ namespace StageRanking
     {
         public string nameToken;
         public int score;
+        public int addedScoreRequirement;
 
         public int CompareTo(Score other)
         {

@@ -15,7 +15,7 @@ namespace StageRanking
         public static ConfigEntry<AnimationSpeed> AnimationDuration()
         {
             return StageRankingPlugin.instance.Config.Bind<AnimationSpeed>("General", "Animation Duration", AnimationSpeed.Default,
-                "How long it will take for the UI to tally up and display the final score.\n\nWhen set to Long while you're singleplayer/host, it may increase the time it takes for the teleporter to activate to make sure the full animation has time to play.\nWhen set to Default, it will choose Long when you're singleplayer/host.");
+                "How long it will take for the UI to tally up and display the final score.\n\nWhen using the long animation while you're singleplayer/host, it may increase the time it takes for the teleporter to activate to make sure the full animation has time to play.\nWhen set to Default, it will attempt to play the long animation, but will fallback to the short one in multiplayer situations where the teleporter cannot be delayed.");
         }
         public enum AnimationSpeed
         {
@@ -57,25 +57,25 @@ namespace StageRanking
         }
         #endregion
         #region Ranking
-        public static ConfigEntry<int> SRankRequirement()
+        public static ConfigEntry<float> SRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Ranking", "S-Rank", 40000,
-                "The score needed to achieve an S-rank.");
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "S-Rank", 0.9f,
+                "The percentage, out of all possible score you can get, that you must earn to achieve an S-rank.");
         }
-        public static ConfigEntry<int> ARankRequirement()
+        public static ConfigEntry<float> ARankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Ranking", "A-Rank", 36000,
-                "The score needed to achieve an A-rank.");
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "A-Rank", 0.85f,
+                "The percentage, out of all possible score you can get, that you must earn to achieve an A-rank.");
         }
-        public static ConfigEntry<int> BRankRequirement()
+        public static ConfigEntry<float> BRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Ranking", "B-Rank", 32000,
-                "The score needed to achieve a B-rank.");
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "B-Rank", 0.75f,
+                "The percentage, out of all possible score you can get, that you must earn to achieve an B-rank.");
         }
-        public static ConfigEntry<int> CRankRequirement()
+        public static ConfigEntry<float> CRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Ranking", "C-Rank", 28000,
-                "The score needed to achieve a C-rank.");
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "C-Rank", 0.7f,
+                "The percentage, out of all possible score you can get, that you must earn to achieve an C-rank.");
         }
         #endregion
 
@@ -87,16 +87,21 @@ namespace StageRanking
             ModSettingsManager.AddOption(new ChoiceOption(AnimationDuration()));
             #endregion
             #region Time Score
+            ModSettingsManager.AddOption(new IntFieldOption(MaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
             ModSettingsManager.AddOption(new IntFieldOption(TimeForMaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
+            ModSettingsManager.AddOption(new IntFieldOption(TimeForMinTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
             #endregion
             #region Loot Score
             ModSettingsManager.AddOption(new IntFieldOption(MaxLootScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
             #endregion
+            #region Mountain Score
+            ModSettingsManager.AddOption(new IntFieldOption(ScorePerMountainShrine(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
+            #endregion
             #region Ranking
-            ModSettingsManager.AddOption(new IntFieldOption(SRankRequirement(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
-            ModSettingsManager.AddOption(new IntFieldOption(ARankRequirement(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
-            ModSettingsManager.AddOption(new IntFieldOption(BRankRequirement(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
-            ModSettingsManager.AddOption(new IntFieldOption(CRankRequirement(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
+            ModSettingsManager.AddOption(new FloatFieldOption(SRankRequirement(), new RiskOfOptions.OptionConfigs.FloatFieldConfig() { Min = 0, Max = 1 }));
+            ModSettingsManager.AddOption(new FloatFieldOption(ARankRequirement(), new RiskOfOptions.OptionConfigs.FloatFieldConfig() { Min = 0, Max = 1 }));
+            ModSettingsManager.AddOption(new FloatFieldOption(BRankRequirement(), new RiskOfOptions.OptionConfigs.FloatFieldConfig() { Min = 0, Max = 1 }));
+            ModSettingsManager.AddOption(new FloatFieldOption(CRankRequirement(), new RiskOfOptions.OptionConfigs.FloatFieldConfig() { Min = 0, Max = 1 }));
             #endregion
         }
         #endregion

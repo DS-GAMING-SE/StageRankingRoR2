@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SocialPlatforms.Impl;
 
 namespace StageRanking
@@ -24,12 +25,12 @@ namespace StageRanking
         {
             return $"<style=cUserSetting>{points}</style> pts.";
         }
-        public static Ranking GetRanking(int score)
+        public static Ranking GetRanking(int score, int scoreRequirement)
         {
-            if (score >= Config.SRankRequirement().Value) return Ranking.S;
-            if (score >= Config.ARankRequirement().Value) return Ranking.A;
-            if (score >= Config.BRankRequirement().Value) return Ranking.B;
-            if (score >= Config.CRankRequirement().Value) return Ranking.C;
+            if (score >= scoreRequirement * Config.SRankRequirement().Value) return Ranking.S;
+            if (score >= scoreRequirement * Config.ARankRequirement().Value) return Ranking.A;
+            if (score >= scoreRequirement * Config.BRankRequirement().Value) return Ranking.B;
+            if (score >= scoreRequirement * Config.CRankRequirement().Value) return Ranking.C;
             return Ranking.D;
         }
         public enum Ranking
@@ -39,6 +40,15 @@ namespace StageRanking
             B,
             A,
             S
+        }
+        public static bool GetIsAnimationSpeedLong()
+        {
+            if (NetworkServer.active)
+            {
+                return Config.AnimationDuration().Value != Config.AnimationSpeed.Short;
+            }
+            return Config.AnimationDuration().Value == Config.AnimationSpeed.Long;
+            // Should check if host has the mod too. If they do and the animation speed is long, then client default can be long too
         }
     }
 }
