@@ -25,13 +25,25 @@ namespace StageRanking
             {
                 if (Config.TimeForMaxTimeScore().Value < Config.TimeForMinTimeScore().Value)
                 {
-                    scores.Add(new Score
+                    if (Config.longStages == null) Config.UpdateLongStagesList(null, null);
+                    if (Config.veryLongStages == null) Config.UpdateVeryLongStagesList(null, null);
+                    float timeMult = 1f;
+                    if (Config.veryLongStages.Contains(Stage.instance.sceneDef.cachedName))
                     {
-                        nameToken = "DS_GAMING_STAGE_RANKING_TIME_SCORE",
-                        score = Util.ClampedNonlinearLerp(0, Config.MaxTimeScore().Value,
-                    (1 - ((Run.instance.GetRunStopwatch() - Stage.instance.entryStopwatchValue) - Config.TimeForMaxTimeScore().Value) / Config.TimeForMinTimeScore().Value), 1.5f),
-                        addedScoreRequirement = Config.MaxTimeScore().Value
-                    });
+                        timeMult += Config.VeryLongStageMultiplierTimeScore().Value;
+                    }
+                    else if (Config.longStages.Contains(Stage.instance.sceneDef.cachedName))
+                    {
+                        timeMult += Config.LongStageMultiplierTimeScore().Value;
+                    }
+
+                    scores.Add(new Score
+                        {
+                            nameToken = "DS_GAMING_STAGE_RANKING_TIME_SCORE",
+                            score = Util.ClampedNonlinearLerp(0, Config.MaxTimeScore().Value,
+                        (1 - ((Run.instance.GetRunStopwatch() - Stage.instance.entryStopwatchValue) - (Config.TimeForMaxTimeScore().Value) * timeMult)/ (Config.TimeForMinTimeScore().Value * timeMult)), 0.7f),
+                            addedScoreRequirement = Config.MaxTimeScore().Value
+                        });
                 }
                 else
                 {
@@ -52,7 +64,7 @@ namespace StageRanking
                 scores.Add(new Score
                 {
                     nameToken = "DS_GAMING_STAGE_RANKING_LOOT_SCORE",
-                    score = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 2f),
+                    score = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 1.5f),
                     addedScoreRequirement = Config.MaxLootScore().Value
                 });
             }
@@ -68,7 +80,7 @@ namespace StageRanking
             #endregion
         }
 
-        public static void CreateRanking()
+        public static void CreateRanking(SceneExitController sceneExitController)
         {
             List<Score> finalScores = new();
             if (OnStageRankingGatherScores != null)
@@ -88,6 +100,7 @@ namespace StageRanking
             }
             if (finalScores.Count > 0)
             {
+                StageRankingPanel.sceneExitController = sceneExitController;
                 StageRankingPanel.CreatePanel(finalScores);
             }
         }

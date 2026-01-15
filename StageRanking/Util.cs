@@ -19,11 +19,11 @@ namespace StageRanking
         }
         public static string ScoreTextFormat(string scoreName, int score)
         {
-            return $"{scoreName}: {PointsTextFormat(score)}";
+            return Language.GetStringFormatted("STAT_NAME_VALUE_FORMAT", Language.GetString(scoreName), score);
         }
         public static string PointsTextFormat(int points)
         {
-            return $"<style=cUserSetting>{points}</style> pts.";
+            return Language.GetStringFormatted("STAT_POINTS_FORMAT", points);
         }
         public static Ranking GetRanking(int score, int scoreRequirement)
         {
@@ -48,7 +48,7 @@ namespace StageRanking
                 return Config.AnimationDuration().Value != Config.AnimationSpeed.Short;
             }
             return Config.AnimationDuration().Value == Config.AnimationSpeed.Long;
-            // Should check if host has the mod too. If they do and the animation speed is long, then client default can be long too
+            // Should check if host has the mod too. If they do and the animation speed is long, then client default can be long too. I don't know how to check that
         }
     }
 }
