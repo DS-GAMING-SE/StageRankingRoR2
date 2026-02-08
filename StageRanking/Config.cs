@@ -50,7 +50,7 @@ namespace StageRanking
         public static ConfigEntry<string> LongStagesTimeScore()
         {
             return StageRankingPlugin.instance.Config.Bind<string>("Time Score", "Long Stages", "rootjungle, dampcavesimple, shipgraveyard, repurposedcrater",
-                "Stages that are expected to take longer than normal, giving you more time to get a good rank. By default, this includes all stage 4s.\n\nYou must put in the internal name of the stage. Use list_scene in the console to see the internal names of stages.");
+                "Stages that are expected to take longer than normal, giving you more time to get a good time score. By default, this includes all stage 4s.\n\nYou must put in the internal name of the stage. Use scene_list in the console to see the internal names of stages.");
         }
         public static string[] longStages;
         public static ConfigEntry<float> LongStageMultiplierTimeScore()
@@ -61,7 +61,7 @@ namespace StageRanking
         public static ConfigEntry<string> VeryLongStagesTimeScore()
         {
             return StageRankingPlugin.instance.Config.Bind<string>("Time Score", "Very Long Stages", "conduitcanyon, moon, moon2",
-                "Stages that are expected to take a lot longer than normal, giving you more time to get a good rank. By default, this includes Conduit Canyon and Commencement.\n\nYou must put in the internal name of the stage. Use list_scene in the console to see the internal names of stages.");
+                "Stages that are expected to take a lot longer than normal, giving you more time to get a good time score. By default, this includes Conduit Canyon and Commencement.\n\nYou must put in the internal name of the stage. Use scene_list in the console to see the internal names of stages.");
         }
         public static string[] veryLongStages;
         public static ConfigEntry<float> VeryLongStageMultiplierTimeScore()
@@ -121,6 +121,7 @@ namespace StageRanking
             ModSettingsManager.AddOption(new IntFieldOption(TimeForMinTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
             ModSettingsManager.AddOption(new StringInputFieldOption(LongStagesTimeScore()));
             LongStagesTimeScore().SettingChanged += UpdateLongStagesList;
+            VeryLongStagesTimeScore().SettingChanged += UpdateVeryLongStagesList;
             ModSettingsManager.AddOption(new SliderOption(LongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
             ModSettingsManager.AddOption(new StringInputFieldOption(VeryLongStagesTimeScore()));
             ModSettingsManager.AddOption(new SliderOption(VeryLongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));

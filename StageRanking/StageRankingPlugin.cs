@@ -25,9 +25,9 @@ namespace StageRanking
             instance = this;
             Log.Init(Logger);
 
-            StageRankingTracker.Initialize();
+            Assets.Initialize();
 
-            StageRankingPanel.Initialize();
+            StageRankingTracker.Initialize();
 
             OnHooks.Initialize();
 

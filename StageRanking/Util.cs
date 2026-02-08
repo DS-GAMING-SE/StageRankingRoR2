@@ -33,13 +33,21 @@ namespace StageRanking
             if (score >= scoreRequirement * Config.CRankRequirement().Value) return Ranking.C;
             return Ranking.D;
         }
-        public enum Ranking
+        public static RankingVisual GetRankingVisual(Ranking ranking)
         {
-            D,
-            C,
-            B,
-            A,
-            S
+            switch (ranking)
+            {
+                case Ranking.C:
+                    return Assets.cRanking;
+                case Ranking.B:
+                    return Assets.bRanking;
+                case Ranking.A:
+                    return Assets.aRanking;
+                case Ranking.S:
+                    return Assets.sRanking;
+                default:
+                    return Assets.dRanking;
+            }
         }
         public static bool GetIsAnimationSpeedLong()
         {
@@ -50,5 +58,13 @@ namespace StageRanking
             return Config.AnimationDuration().Value == Config.AnimationSpeed.Long;
             // Should check if host has the mod too. If they do and the animation speed is long, then client default can be long too. I don't know how to check that
         }
+    }
+    public enum Ranking
+    {
+        D,
+        C,
+        B,
+        A,
+        S
     }
 }

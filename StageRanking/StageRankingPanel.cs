@@ -1,5 +1,7 @@
 ﻿using R2API;
 using RoR2;
+using RoR2.ContentManagement;
+using RoR2.HudOverlay;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,28 +9,32 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.UI;
 
 namespace StageRanking
 {
     public class StageRankingPanel : MonoBehaviour
     {
-        public static GameObject panelPrefab;
         public static SceneExitController sceneExitController;
+        private static OverlayController overlayController;
+
+        public static List<Score> displayedScores;
 
         public static PanelMusicDef defaultPanelMusicDef = new("Play_stageranking_default_music", 7.5f, "Play_stageranking_default_music_short", 4f);
         public static PanelMusicDef[] overridePanelMusicDefs = [];
 
         public static bool panelActive;
-        public static Action<Util.Ranking> OnStageRankingPanelEnd;
-        public static void Initialize()
-        {
-            panelPrefab = PrefabAPI.CreateEmptyPrefab("StageRankingPanel");
-            panelPrefab.AddComponent<StageRankingPanel>();
-        }
+        public static Action<Ranking> OnStageRankingPanelEnd;
         public static void CreatePanel(List<Score> scores)
         {
             CreateDebugChatMessage(scores);
-            GameObject.Instantiate(panelPrefab);
+            displayedScores = scores;
+            overlayController = HudOverlayManager.AddGlobalOverlay(new OverlayCreationParams
+            {
+                prefab = Assets.panelPrefab,
+                childLocatorEntry = "CrosshairExtras"
+            });
         }
 
         public static void CreateDebugChatMessage(List<Score> scores)
@@ -50,6 +56,16 @@ namespace StageRanking
             panelActive = true;
             Log.Message("Stage Ranking Panel Start");
             yield return new WaitForSeconds(0.5f);
+
+            int totalScore = 0;
+            int totalScoreRequirement = 0;
+            foreach (var item in displayedScores)
+            {
+                totalScore += item.score;
+                totalScoreRequirement += item.addedScoreRequirement;
+            }
+            UpdateRanking(Util.GetRanking(totalScore, totalScoreRequirement));
+
             PanelMusicDef panelMusicDef = GetPanelMusicDef();
             if (Config.PlayMusic().Value) { RoR2.Util.PlaySound(Util.GetIsAnimationSpeedLong() ? panelMusicDef.soundString : panelMusicDef.shortSoundString, gameObject); }
             StartCoroutine(EndPanelAfterDelay(Util.GetIsAnimationSpeedLong() ? panelMusicDef.duration : panelMusicDef.shortDuration));
@@ -59,14 +75,27 @@ namespace StageRanking
             yield return new WaitForSeconds(duration);
             Log.Message("Stage Ranking Panel End");
             panelActive = false;
-            OnStageRankingPanelEnd?.Invoke(Util.Ranking.D);
+            OnStageRankingPanelEnd?.Invoke(Ranking.D);
             if (sceneExitController && sceneExitController.exitState == SceneExitController.ExitState.Idle)
             {
                 sceneExitController.SetState(SceneExitController.ExitState.TeleportOut);
             }
         }
+        public void UpdateRanking(Ranking rank)
+        {
+            RankingVisual rankingVisual = Util.GetRankingVisual(rank);
+            Image rankingBackground = transform.Find("RankingBackground").GetComponent<Image>();
+            rankingBackground.color = rankingVisual.backgroundColor;
+            Image rankingForeground = rankingBackground.transform.Find("Ranking").GetComponent<Image>();
+            rankingForeground.color = rankingVisual.foregroundColor;
+            AssetAsyncReferenceManager<Sprite>.LoadAsset(rankingVisual.foregroundSprite, AsyncReferenceHandleUnloadType.OnSceneUnload).Completed += delegate (AsyncOperationHandle<Sprite> x)
+            {
+                rankingForeground.sprite = x.Result;
+            };
+        }
         public void OnDestroy()
         {
+            HudOverlayManager.RemoveGlobalOverlay(overlayController);
             panelActive = false;
         }
         public static PanelMusicDef GetPanelMusicDef()
