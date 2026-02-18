@@ -33,6 +33,21 @@ namespace StageRanking
             if (score >= scoreRequirement * Config.CRankRequirement().Value) return Ranking.C;
             return Ranking.D;
         }
+        public static int GetScoreRequirement(Ranking ranking, int scoreRequirement)
+        {
+            switch (ranking)
+            {
+                case Ranking.C:
+                    return (int)(scoreRequirement * Config.CRankRequirement().Value);
+                case Ranking.B:
+                    return (int)(scoreRequirement * Config.BRankRequirement().Value);
+                case Ranking.A:
+                    return (int)(scoreRequirement * Config.ARankRequirement().Value);
+                case Ranking.S:
+                    return (int)(scoreRequirement * Config.SRankRequirement().Value);
+            }
+            return 0;
+        }
         public static RankingVisual GetRankingVisual(Ranking ranking)
         {
             switch (ranking)

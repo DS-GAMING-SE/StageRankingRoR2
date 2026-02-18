@@ -42,23 +42,30 @@ namespace StageRanking
             Addressables.LoadContentCatalogAsync(System.IO.Path.Combine(AddressablesDirectory, "catalog.json")).WaitForCompletion();
 
             panelPrefab = Addressables.LoadAssetAsync<GameObject>(panelAsset).WaitForCompletion();
-            panelPrefab.AddComponent<StageRankingPanel>();
+            StageRankingPanel panelComponent = panelPrefab.AddComponent<StageRankingPanel>();
 
-            Image rankingBackground = panelPrefab.transform.Find("RankingBackground").GetComponent<Image>();
-            rankingBackground.color = new Color(0.4f, 0.4f, 0.5f);
+            panelComponent.rankingBackground = panelPrefab.transform.Find("RankingBackground").GetComponent<Image>();
+            panelComponent.rankingForeground = panelComponent.rankingBackground.transform.GetChild(0).GetComponent<Image>();
             Image scoreHeader = panelPrefab.transform.Find("ScoreContainer/ScoreHeader").GetComponent<Image>();
-            scoreHeader.color = new Color32(136, 122, 152, 255);
             TranslucentImage blurPanel = panelPrefab.transform.Find("ScoreContainer/BlurPanel").gameObject.AddComponent<TranslucentImage>();
             blurPanel.color = Color.black;
             Image scoreBody = panelPrefab.transform.Find("ScoreContainer/ScoreBody").GetComponent<Image>();
-            scoreBody.color = new Color32(22, 22, 22, 255);
+
+            Transform barTransform = panelPrefab.transform.Find("ScoreContainer/ScoreBody/BarPanel");
+            Image barPanel = barTransform.GetComponent<Image>();
+            Image barInterior = barTransform.GetChild(0).GetComponent<Image>();
+            panelComponent.dBar = barTransform.GetChild(0).GetChild(0).GetComponent<Image>();
+            panelComponent.cBar = barTransform.GetChild(0).GetChild(1).GetComponent<Image>();
+            panelComponent.bBar = barTransform.GetChild(0).GetChild(2).GetComponent<Image>();
+            panelComponent.aBar = barTransform.GetChild(0).GetChild(3).GetComponent<Image>();
 
             // Dissect GameEndReportPanel and steal all of its images and colors and materials
             AssetAsyncReferenceManager<GameObject>.LoadAsset(new AssetReferenceT<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.GameEndReportPanel_prefab)).Completed += delegate (AsyncOperationHandle<GameObject> x)
             {
-                rankingBackground.sprite = x.Result.transform.Find("SafeArea (JUICED)/HeaderArea/ResultArea/ResultIconBackground").GetComponent<Image>().sprite;
+                panelComponent.rankingBackground.sprite = x.Result.transform.Find("SafeArea (JUICED)/HeaderArea/ResultArea/ResultIconBackground").GetComponent<Image>().sprite;
                 Transform container = x.Result.transform.Find("SafeArea (JUICED)/BodyArea/StatsAndChatArea/StatsContainer");
                 scoreHeader.sprite = container.Find("Stats And Player Nav/Stats Header").GetComponent<Image>().sprite;
+                barPanel.sprite = scoreHeader.sprite;
                 GameObject scoreHeaderTextObject = GameObject.Instantiate(container.Find("Stats And Player Nav/Stats Header/InfoLabel").gameObject);
                 scoreHeaderTextObject.GetComponent<LanguageTextMeshController>()._token = "DS_GAMING_STAGE_RANKING_SCORE";
                 scoreHeaderTextObject.transform.SetParent(scoreHeader.transform);
@@ -72,6 +79,7 @@ namespace StageRanking
                 scoreHeaderText.fontSizeMax = 24;
                 panelPrefab.transform.Find("ScoreContainer/BorderImage").GetComponent<Image>().sprite = container.Find("BorderImage").GetComponent<Image>().sprite;
                 scoreBody.sprite = container.Find("Stats Body").GetComponent<Image>().sprite;
+                barInterior.sprite = scoreBody.sprite;
                 TranslucentImage originalBlur = container.Find("BlurPanel").GetComponent<TranslucentImage>();
                 blurPanel.material = originalBlur.material;
                 blurPanel.sprite = originalBlur.sprite;
@@ -82,9 +90,16 @@ namespace StageRanking
             scoreStripPrefab = Addressables.LoadAssetAsync<GameObject>(scoreStripAsset).WaitForCompletion();
 
             Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.matUIIconLoss_mat).Completed += delegate (AsyncOperationHandle<Material> x)
-            { 
-                rankingBackground.material = x.Result;
-                rankingBackground.transform.GetChild(0).GetComponent<Image>().material = x.Result;
+            {
+                panelComponent.rankingBackground.material = x.Result;
+                panelComponent.rankingBackground.transform.GetChild(0).GetComponent<Image>().material = x.Result;
+            };
+            Addressables.LoadAssetAsync<Sprite>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.texUINonsegmentedHealthbar_png_texUINonsegmentedHealthbar_).Completed += delegate (AsyncOperationHandle<Sprite> x)
+            {
+                panelComponent.dBar.sprite = x.Result;
+                panelComponent.cBar.sprite = x.Result;
+                panelComponent.bBar.sprite = x.Result;
+                panelComponent.aBar.sprite = x.Result;
             };
 
             dRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier1ItemDark), 
@@ -96,12 +111,13 @@ namespace StageRanking
             bRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier2Item),
                 foregroundSprite = bRankingSprite,
                 backgroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier2ItemDark) };
-            aRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItem),
+            aRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier3Item),
                 foregroundSprite = aRankingSprite,
-                backgroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItemDark) };
-            sRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier3Item),
-                foregroundSprite = sRankingSprite,
                 backgroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.Tier3ItemDark) };
+            sRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItem),
+                foregroundSprite = sRankingSprite,
+                backgroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItemDark)
+            };
         }
     }
     public struct RankingVisual

@@ -21,11 +21,34 @@ namespace StageRanking
 
         public static List<Score> displayedScores;
 
-        public static PanelMusicDef defaultPanelMusicDef = new("Play_stageranking_default_music", 7.5f, "Play_stageranking_default_music_short", 4f);
-        public static PanelMusicDef[] overridePanelMusicDefs = [];
+        public static PanelMusicDefCombo defaultPanelMusicDef = new(
+            new PanelMusicDef("Play_stageranking_default_music", 4.8f, 7.5f),
+            new PanelMusicDef("Play_stageranking_default_music_short", 2.1f, 4f));
+        public static PanelMusicDefCombo[] overridePanelMusicDefs = [];
+        public const float panelStartPad = 0.5f;
+        public const float tallyStartPadPercent = 0.2f;
+        private float tallyStart;
+        public const float tallyEndPad = 0.5f;
+        private PanelState state;
+        private PanelMusicDef panelMusicDef;
+        private int totalScore;
+        private int totalScoreRequirement;
+        private float targetBarFill;
+
+        private float timer;
 
         public static bool panelActive;
         public static Action<Ranking> OnStageRankingPanelEnd;
+
+        public Ranking ranking;
+
+        private RankingVisual rankingVisual;
+        public Image rankingForeground;
+        public Image rankingBackground;
+        public Image dBar;
+        public Image cBar;
+        public Image bBar;
+        public Image aBar;
         public static void CreatePanel(List<Score> scores)
         {
             CreateDebugChatMessage(scores);
@@ -51,42 +74,112 @@ namespace StageRanking
             Chat.AddMessage($"<size=110%>{Util.PointsTextFormat(totalScore)} ==== </size><size=130%>{Util.GetRanking(totalScore, totalScoreRequirement)}</size>");
         }
 
-        public IEnumerator Start()
+        public void Start()
         {
             panelActive = true;
             Log.Message("Stage Ranking Panel Start");
-            yield return new WaitForSeconds(0.5f);
-
-            int totalScore = 0;
-            int totalScoreRequirement = 0;
+            panelMusicDef = GetPanelMusicDef();
+            tallyStart = (panelMusicDef.timeUntilRankReveal - panelStartPad) * tallyStartPadPercent;
             foreach (var item in displayedScores)
             {
                 totalScore += item.score;
                 totalScoreRequirement += item.addedScoreRequirement;
             }
-            UpdateRanking(Util.GetRanking(totalScore, totalScoreRequirement));
-
-            PanelMusicDef panelMusicDef = GetPanelMusicDef();
-            if (Config.PlayMusic().Value) { RoR2.Util.PlaySound(Util.GetIsAnimationSpeedLong() ? panelMusicDef.soundString : panelMusicDef.shortSoundString, gameObject); }
-            StartCoroutine(EndPanelAfterDelay(Util.GetIsAnimationSpeedLong() ? panelMusicDef.duration : panelMusicDef.shortDuration));
+            ranking = Util.GetRanking(totalScore, totalScoreRequirement);
+            CalculateTargetBarFill();
+            PrepareRanking(ranking);
         }
-        IEnumerator EndPanelAfterDelay(float duration)
+        public void Update()
         {
-            yield return new WaitForSeconds(duration);
-            Log.Message("Stage Ranking Panel End");
-            panelActive = false;
-            OnStageRankingPanelEnd?.Invoke(Ranking.D);
-            if (sceneExitController && sceneExitController.exitState == SceneExitController.ExitState.Idle)
+            timer += Time.deltaTime;
+            switch(state)
             {
-                sceneExitController.SetState(SceneExitController.ExitState.TeleportOut);
+                case PanelState.BeforeStart:
+                    if (timer > panelStartPad)
+                    {
+                        SetState(PanelState.Start);
+                    }
+                    break;
+                case PanelState.Start:
+                    if (timer > panelStartPad + tallyStart)
+                    {
+                        SetState(PanelState.Tallying);
+                    }
+                    break;
+                case PanelState.Tallying:
+                    SetBarFill((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
+                    if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
+                    {
+                        SetState(PanelState.Reveal);
+                    }
+                    break;
+                case PanelState.Reveal:
+                    if (timer > panelMusicDef.duration)
+                    {
+                        SetState(PanelState.End);
+                    }
+                    break;
             }
         }
-        public void UpdateRanking(Ranking rank)
+        public void SetState(PanelState newState)
         {
-            RankingVisual rankingVisual = Util.GetRankingVisual(rank);
-            Image rankingBackground = transform.Find("RankingBackground").GetComponent<Image>();
-            rankingBackground.color = rankingVisual.backgroundColor;
-            Image rankingForeground = rankingBackground.transform.Find("Ranking").GetComponent<Image>();
+            if (state == newState) return;
+            state = newState;
+            switch (state)
+            {
+                case PanelState.BeforeStart:
+                    break;
+                case PanelState.Start:
+                    if (Config.PlayMusic().Value) { RoR2.Util.PlaySound(panelMusicDef.soundString, gameObject); }
+                    break;
+                case PanelState.Tallying:
+                    break;
+                case PanelState.Reveal:
+                    rankingBackground.color = rankingVisual.backgroundColor;
+                    rankingForeground.gameObject.SetActive(true);
+                    RoR2.Util.PlaySound("Play_stageranking_result", gameObject);
+                    break;
+                case PanelState.End:
+                    Log.Message("Stage Ranking Panel End");
+                    panelActive = false;
+                    OnStageRankingPanelEnd?.Invoke(ranking);
+                    if (sceneExitController && sceneExitController.exitState == SceneExitController.ExitState.Idle)
+                    {
+                        sceneExitController.SetState(SceneExitController.ExitState.TeleportOut);
+                    }
+                    break;
+            }
+        }
+        public void CalculateTargetBarFill()
+        {
+            if (ranking == Ranking.S)
+            {
+                targetBarFill = 1f;
+                return;
+            }
+            float previousRank;
+            if (ranking == Ranking.D)
+            {
+                previousRank = 0;
+            }
+            else
+            {
+                previousRank = Util.GetScoreRequirement(ranking - 1, totalScoreRequirement);
+            }
+            float nextRank = Util.GetScoreRequirement(ranking + 1, totalScoreRequirement);
+            targetBarFill = (float)ranking * 0.25f + (((totalScore - previousRank)/(nextRank - previousRank)) * 0.25f);
+        }
+        public void SetBarFill(float totalFill)
+        {
+            float fill = Mathf.Min(totalFill, targetBarFill);
+            dBar.fillAmount = fill * 4f;
+            cBar.fillAmount = (fill - 0.25f) * 4f;
+            bBar.fillAmount = (fill - 0.5f) * 4f;
+            aBar.fillAmount = (fill - 0.75f) * 4f;
+        }
+        public void PrepareRanking(Ranking rank)
+        {
+            rankingVisual = Util.GetRankingVisual(rank);
             rankingForeground.color = rankingVisual.foregroundColor;
             AssetAsyncReferenceManager<Sprite>.LoadAsset(rankingVisual.foregroundSprite, AsyncReferenceHandleUnloadType.OnSceneUnload).Completed += delegate (AsyncOperationHandle<Sprite> x)
             {
@@ -109,55 +202,60 @@ namespace StageRanking
                     {
                         if (item.requiredSurvivorBodyName == null || item.requiredSurvivorBodyName.Contains(BodyCatalog.GetBodyName(user.cachedMaster.backupBodyIndex)))
                         {
-                            return item;
+                            return Util.GetIsAnimationSpeedLong() ? item.panelMusicDef : item.shortPanelMusicDef;
                         }
                     }
                 }
             }
-            return defaultPanelMusicDef;
+            return Util.GetIsAnimationSpeedLong() ? defaultPanelMusicDef.panelMusicDef : defaultPanelMusicDef.shortPanelMusicDef;
+        }
+
+        public enum PanelState
+        {
+            BeforeStart,
+            Start,
+            Tallying,
+            Reveal,
+            End
+        }
+    }
+    public struct PanelMusicDefCombo
+    {
+        public PanelMusicDef panelMusicDef;
+        public PanelMusicDef shortPanelMusicDef;
+
+        public string[] requiredSurvivorBodyName;
+
+        public PanelMusicDefCombo(PanelMusicDef panelMusicDef, PanelMusicDef shortPanelMusicDef)
+        {
+            this.panelMusicDef = panelMusicDef;
+            this.shortPanelMusicDef = shortPanelMusicDef;
+            this.requiredSurvivorBodyName = null;
+        }
+        public PanelMusicDefCombo(PanelMusicDef panelMusicDef, PanelMusicDef shortPanelMusicDef, string requiredSurvivorBodyName)
+        {
+            this.panelMusicDef = panelMusicDef;
+            this.shortPanelMusicDef = shortPanelMusicDef;
+            this.requiredSurvivorBodyName = [requiredSurvivorBodyName];
+        }
+        public PanelMusicDefCombo(PanelMusicDef panelMusicDef, PanelMusicDef shortPanelMusicDef, string[] requiredSurvivorBodyName)
+        {
+            this.panelMusicDef = panelMusicDef;
+            this.shortPanelMusicDef = shortPanelMusicDef;
+            this.requiredSurvivorBodyName = requiredSurvivorBodyName;
         }
     }
 
     public struct PanelMusicDef
     {
         public string soundString;
+        public float timeUntilRankReveal;
         public float duration;
-
-        public string shortSoundString;
-        public float shortDuration;
-
-        public string[] requiredSurvivorBodyName;
-        public PanelMusicDef(string soundString, float duration)
+        public PanelMusicDef(string soundString, float timeUntilRankReveal, float duration)
         {
             this.soundString = soundString;
+            this.timeUntilRankReveal = timeUntilRankReveal;
             this.duration = duration;
-            this.shortSoundString = soundString;
-            this.shortDuration = duration;
-            this.requiredSurvivorBodyName = null;
-        }
-        public PanelMusicDef(string soundString, float duration, string shortSoundString, float shortDuration)
-        {
-            this.soundString = soundString;
-            this.duration = duration;
-            this.shortSoundString = shortSoundString;
-            this.shortDuration = shortDuration;
-            this.requiredSurvivorBodyName = null;
-        }
-        public PanelMusicDef(string soundString, float duration, string shortSoundString, float shortDuration, string requiredSurvivorBodyName)
-        {
-            this.soundString = soundString;
-            this.duration = duration;
-            this.shortSoundString = shortSoundString;
-            this.shortDuration = shortDuration;
-            this.requiredSurvivorBodyName = [requiredSurvivorBodyName];
-        }
-        public PanelMusicDef(string soundString, float duration, string shortSoundString, float shortDuration, string[] requiredSurvivorBodyName)
-        {
-            this.soundString = soundString;
-            this.duration = duration;
-            this.shortSoundString = shortSoundString;
-            this.shortDuration = shortDuration;
-            this.requiredSurvivorBodyName = requiredSurvivorBodyName;
         }
     }
 }
