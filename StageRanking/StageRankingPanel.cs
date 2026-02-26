@@ -2,11 +2,13 @@
 using RoR2;
 using RoR2.ContentManagement;
 using RoR2.HudOverlay;
+using RoR2.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -35,6 +37,8 @@ namespace StageRanking
         private int totalScoreRequirement;
         private float targetBarFill;
 
+        private List<HGTextMeshProUGUI> ptsText;
+
         private float timer;
 
         public static bool panelActive;
@@ -49,8 +53,10 @@ namespace StageRanking
         public Image cBar;
         public Image bBar;
         public Image aBar;
+        public Transform scoreStripContainer;
         public static void CreatePanel(List<Score> scores)
         {
+            if (panelActive) return;
             CreateDebugChatMessage(scores);
             displayedScores = scores;
             overlayController = HudOverlayManager.AddGlobalOverlay(new OverlayCreationParams
@@ -107,18 +113,23 @@ namespace StageRanking
                     }
                     break;
                 case PanelState.Tallying:
-                    SetBarFill((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
-                    if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
+                    if (timer <= panelMusicDef.timeUntilRankReveal)
+                    {
+                        float fillPercent = Mathf.Clamp01((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
+                        SetBarFill(fillPercent);
+                        SetPtsValues(fillPercent);
+                    }
+                    else if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
                     {
                         SetState(PanelState.Reveal);
                     }
                     break;
                 case PanelState.Reveal:
-                    if (timer > panelMusicDef.duration)
-                    {
-                        SetState(PanelState.End);
-                    }
                     break;
+            }
+            if (timer > panelMusicDef.duration)
+            {
+                SetState(PanelState.End);
             }
         }
         public void SetState(PanelState newState)
@@ -177,6 +188,14 @@ namespace StageRanking
             bBar.fillAmount = (fill - 0.5f) * 4f;
             aBar.fillAmount = (fill - 0.75f) * 4f;
         }
+        public void SetPtsValues(float percentOfMax)
+        {
+            for (int i = 0; i < ptsText.Count; i++)
+            {
+                ptsText[i].text = Util.PointsTextFormat(Math.Min((int)(displayedScores[i].score * percentOfMax),
+                    Math.Max(displayedScores[i].score, displayedScores[i].addedScoreRequirement)));
+            }
+        }
         public void PrepareRanking(Ranking rank)
         {
             rankingVisual = Util.GetRankingVisual(rank);
@@ -185,6 +204,19 @@ namespace StageRanking
             {
                 rankingForeground.sprite = x.Result;
             };
+            CreateScoreStrips();
+        }
+        private void CreateScoreStrips()
+        {
+            ptsText = new List<HGTextMeshProUGUI>();
+            for (int i = 0; i < displayedScores.Count; i++)
+            {
+                GameObject strip = GameObject.Instantiate(Assets.scoreStripPrefab, scoreStripContainer);
+                strip.transform.Find("StatNameLabel").GetComponent<HGTextMeshProUGUI>().text = Language.GetString(displayedScores[i].nameToken);
+                HGTextMeshProUGUI pointsText = strip.transform.Find("PointValueLabel").GetComponent<HGTextMeshProUGUI>();
+                pointsText.text = Util.PointsTextFormat(0);
+                ptsText.Add(pointsText);
+            }
         }
         public void OnDestroy()
         {

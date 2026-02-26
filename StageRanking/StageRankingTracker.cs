@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SocialPlatforms.Impl;
 
 namespace StageRanking
@@ -82,6 +83,7 @@ namespace StageRanking
 
         public static void CreateRanking(SceneExitController sceneExitController)
         {
+            if (StageRankingPanel.panelActive) return;
             List<Score> finalScores = new();
             if (OnStageRankingGatherScores != null)
             {
@@ -100,7 +102,7 @@ namespace StageRanking
             }
             if (finalScores.Count > 0)
             {
-                StageRankingPanel.sceneExitController = sceneExitController;
+                StageRankingPanel.sceneExitController = NetworkServer.active ? sceneExitController : null;
                 StageRankingPanel.CreatePanel(finalScores);
             }
         }

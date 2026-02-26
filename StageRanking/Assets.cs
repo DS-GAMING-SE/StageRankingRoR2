@@ -29,7 +29,6 @@ namespace StageRanking
 
         #region Addressable GUID
         public static AssetReferenceT<GameObject> panelAsset = new AssetReferenceT<GameObject>("b1d1223b357e72f4da52ba905c9d3ca9");
-        public static AssetReferenceT<GameObject> scoreStripAsset = new AssetReferenceT<GameObject>("1b50e414ba40d494caff8401e6e2438f");
         public static AssetReferenceSprite dRankingSprite = new AssetReferenceSprite("eeab231232620244a83e8fff99f26271");
         public static AssetReferenceSprite cRankingSprite = new AssetReferenceSprite("88bd72cc3cf158f45a92008d679ece3a");
         public static AssetReferenceSprite bRankingSprite = new AssetReferenceSprite("b5a33a91a6f7a9845913b0fcc0d35913");
@@ -46,10 +45,15 @@ namespace StageRanking
 
             panelComponent.rankingBackground = panelPrefab.transform.Find("RankingBackground").GetComponent<Image>();
             panelComponent.rankingForeground = panelComponent.rankingBackground.transform.GetChild(0).GetComponent<Image>();
+            ObjectScaleCurve rankScaleCurve = panelComponent.rankingForeground.gameObject.AddComponent<ObjectScaleCurve>();
+            rankScaleCurve.useOverallCurveOnly = true;
+            rankScaleCurve.overallCurve = AnimationCurve.EaseInOut(0f, 1.2f, 1f, 1f);
+            rankScaleCurve.timeMax = 0.1f;
             Image scoreHeader = panelPrefab.transform.Find("ScoreContainer/ScoreHeader").GetComponent<Image>();
             TranslucentImage blurPanel = panelPrefab.transform.Find("ScoreContainer/BlurPanel").gameObject.AddComponent<TranslucentImage>();
             blurPanel.color = Color.black;
             Image scoreBody = panelPrefab.transform.Find("ScoreContainer/ScoreBody").GetComponent<Image>();
+            panelComponent.scoreStripContainer = scoreBody.transform.Find("ScoreStripContainer");
 
             Transform barTransform = panelPrefab.transform.Find("ScoreContainer/ScoreBody/BarPanel");
             Image barPanel = barTransform.GetComponent<Image>();
@@ -84,10 +88,11 @@ namespace StageRanking
                 blurPanel.material = originalBlur.material;
                 blurPanel.sprite = originalBlur.sprite;
             };
-
-
-
-            scoreStripPrefab = Addressables.LoadAssetAsync<GameObject>(scoreStripAsset).WaitForCompletion();
+            AssetAsyncReferenceManager<GameObject>.LoadAsset(new AssetReferenceT<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.StatStripTemplate_prefab)).Completed += delegate (AsyncOperationHandle<GameObject> x)
+            {
+                scoreStripPrefab = PrefabAPI.InstantiateClone(x.Result, "StageRankingScoreStrip", false);
+                scoreStripPrefab.GetComponent<LayoutElement>().preferredHeight = 18;
+            };
 
             Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.matUIIconLoss_mat).Completed += delegate (AsyncOperationHandle<Material> x)
             {

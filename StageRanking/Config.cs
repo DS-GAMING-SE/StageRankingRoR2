@@ -80,7 +80,7 @@ namespace StageRanking
         #region Mountain Shrine
         public static ConfigEntry<int> ScorePerMountainShrine()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Mountain Score", "Score Per Mountain Shrine", 5000,
+            return StageRankingPlugin.instance.Config.Bind<int>("Mountain Score", "Score Per Mountain Shrine", 2500,
                 "The amount of score you get for the first mountain shrine stack you have. Subsequent mountain shrine stacks will gradually give less score.");
         }
         #endregion

@@ -41,10 +41,6 @@ MonoBehaviour:
     m_Address: Assets/Rankings/texRankingBIcon.png
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1b50e414ba40d494caff8401e6e2438f
-    m_Address: Assets/StageRankingScoreStrip.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: b5516040b9928b94daa8ce2480ea16ce, type: 2}
   m_SchemaSet:
