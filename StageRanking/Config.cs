@@ -55,7 +55,7 @@ namespace StageRanking
         public static string[] longStages;
         public static ConfigEntry<float> LongStageMultiplierTimeScore()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Time Score", "Long Multiplier", 0.25f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Time Score", "Long Multiplier", 25f,
                 "A multiplier for how much more time you have when on long stages.");
         }
         public static ConfigEntry<string> VeryLongStagesTimeScore()
@@ -66,7 +66,7 @@ namespace StageRanking
         public static string[] veryLongStages;
         public static ConfigEntry<float> VeryLongStageMultiplierTimeScore()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Time Score", "Very Long Multiplier", 0.5f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Time Score", "Very Long Multiplier", 50f,
                 "A multiplier for how much more time you have when on very long stages.");
         }
         #endregion
@@ -87,22 +87,22 @@ namespace StageRanking
         #region Ranking
         public static ConfigEntry<float> SRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "S-Rank", 0.9f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "S-Rank", 90f,
                 "The percentage, out of all possible score you can get, that you must earn to achieve an S-rank.");
         }
         public static ConfigEntry<float> ARankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "A-Rank", 0.85f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "A-Rank", 84f,
                 "The percentage, out of all possible score you can get, that you must earn to achieve an A-rank.");
         }
         public static ConfigEntry<float> BRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "B-Rank", 0.75f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "B-Rank", 76f,
                 "The percentage, out of all possible score you can get, that you must earn to achieve an B-rank.");
         }
         public static ConfigEntry<float> CRankRequirement()
         {
-            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "C-Rank", 0.7f,
+            return StageRankingPlugin.instance.Config.Bind<float>("Ranking", "C-Rank", 70f,
                 "The percentage, out of all possible score you can get, that you must earn to achieve an C-rank.");
         }
         #endregion
@@ -122,9 +122,9 @@ namespace StageRanking
             ModSettingsManager.AddOption(new StringInputFieldOption(LongStagesTimeScore()));
             LongStagesTimeScore().SettingChanged += UpdateLongStagesList;
             VeryLongStagesTimeScore().SettingChanged += UpdateVeryLongStagesList;
-            ModSettingsManager.AddOption(new SliderOption(LongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
+            ModSettingsManager.AddOption(new SliderOption(LongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
             ModSettingsManager.AddOption(new StringInputFieldOption(VeryLongStagesTimeScore()));
-            ModSettingsManager.AddOption(new SliderOption(VeryLongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
+            ModSettingsManager.AddOption(new SliderOption(VeryLongStageMultiplierTimeScore(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
 
             #endregion
             #region Loot Score
@@ -134,10 +134,10 @@ namespace StageRanking
             ModSettingsManager.AddOption(new IntFieldOption(ScorePerMountainShrine(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
             #endregion
             #region Ranking
-            ModSettingsManager.AddOption(new SliderOption(SRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
-            ModSettingsManager.AddOption(new SliderOption(ARankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
-            ModSettingsManager.AddOption(new SliderOption(BRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
-            ModSettingsManager.AddOption(new SliderOption(CRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 1 }));
+            ModSettingsManager.AddOption(new SliderOption(SRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
+            ModSettingsManager.AddOption(new SliderOption(ARankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
+            ModSettingsManager.AddOption(new SliderOption(BRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
+            ModSettingsManager.AddOption(new SliderOption(CRankRequirement(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 0, max = 100 }));
             #endregion
         }
         #endregion

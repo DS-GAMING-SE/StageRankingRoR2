@@ -31,11 +31,11 @@ namespace StageRanking
                     float timeMult = 1f;
                     if (Config.veryLongStages.Contains(Stage.instance.sceneDef.cachedName))
                     {
-                        timeMult += Config.VeryLongStageMultiplierTimeScore().Value;
+                        timeMult += Config.VeryLongStageMultiplierTimeScore().Value / 100f;
                     }
                     else if (Config.longStages.Contains(Stage.instance.sceneDef.cachedName))
                     {
-                        timeMult += Config.LongStageMultiplierTimeScore().Value;
+                        timeMult += Config.LongStageMultiplierTimeScore().Value / 100f;
                     }
 
                     scores.Add(new Score
@@ -53,6 +53,12 @@ namespace StageRanking
             }
             #endregion
             #region Loot Score
+            // This sucks
+            // Shrines of Chance aren't counted since those don't have an instance list. I'd have to comb through every purchaseinteraction on the stage and filter out whats what, then..
+            // ..add separate custom support for tracking whether shrines of chance empty since they function differently from chests, all while being entirely client side and still..
+            // ..keeping track even if the interactable is deleted by Drifter. I don't think there's a sane way to do this
+            // Probably missing other interactables that would make sense, but whatever. The score isn't linear, so it's hard for people to tell exactly how many interactables were..
+            // ..counted based on the score alone, so no one will notice how scuffed this is, probably :)
             int numChests = 0;
             int numOpenedChests = 0;
             foreach (var item in InstanceTracker.GetInstancesList<ChestBehavior>())
@@ -71,10 +77,10 @@ namespace StageRanking
             }
             #endregion
             #region Mountain Shrine Score
-            if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0)
+            if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator)
             {
                 scores.Add(new Score { nameToken = "DS_GAMING_STAGE_RANKING_MOUNTAIN_SHRINE_SCORE", 
-                    score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic(TeleporterInteraction.instance.shrineBonusStacks / 2f)),
+                    score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic((TeleporterInteraction.instance.shrineBonusStacks + (TeleporterInteraction.instance.NetworkshowAccessCodesIndicator ? 1 : 0))/ 2f)),
                     addedScoreRequirement = 0
                 });
             }
@@ -109,8 +115,20 @@ namespace StageRanking
     }
     public struct Score : IComparable<Score>
     {
+        /// <summary>
+        /// Name of the score
+        /// </summary>
         public string nameToken;
+        /// <summary>
+        /// Name of the score
+        /// </summary>
         public int score;
+        /// <summary>
+        /// How much this score raises the overall score requirement for reaching ranks. 
+        /// <para>
+        /// Scores that should be required to be earned to get a good rank, like Time and Loot score, add to the score requirement. Scores that are optional and should only benefit the player if accomplished, like Mountain Shrine score, should not
+        /// </para>
+        /// </summary>
         public int addedScoreRequirement;
 
         public int CompareTo(Score other)

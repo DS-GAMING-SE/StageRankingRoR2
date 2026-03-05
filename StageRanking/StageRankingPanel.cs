@@ -117,7 +117,7 @@ namespace StageRanking
                     {
                         float fillPercent = Mathf.Clamp01((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
                         SetBarFill(fillPercent);
-                        SetPtsValues(fillPercent);
+                        SetPtsValues(Mathf.Clamp01(fillPercent/targetBarFill));
                     }
                     else if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
                     {

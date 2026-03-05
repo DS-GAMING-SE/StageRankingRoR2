@@ -27,10 +27,10 @@ namespace StageRanking
         }
         public static Ranking GetRanking(int score, int scoreRequirement)
         {
-            if (score >= scoreRequirement * Config.SRankRequirement().Value) return Ranking.S;
-            if (score >= scoreRequirement * Config.ARankRequirement().Value) return Ranking.A;
-            if (score >= scoreRequirement * Config.BRankRequirement().Value) return Ranking.B;
-            if (score >= scoreRequirement * Config.CRankRequirement().Value) return Ranking.C;
+            if (score >= scoreRequirement * (Config.SRankRequirement().Value / 100f)) return Ranking.S;
+            if (score >= scoreRequirement * (Config.ARankRequirement().Value / 100f)) return Ranking.A;
+            if (score >= scoreRequirement * (Config.BRankRequirement().Value / 100f)) return Ranking.B;
+            if (score >= scoreRequirement * (Config.CRankRequirement().Value / 100f)) return Ranking.C;
             return Ranking.D;
         }
         public static int GetScoreRequirement(Ranking ranking, int scoreRequirement)
@@ -38,13 +38,13 @@ namespace StageRanking
             switch (ranking)
             {
                 case Ranking.C:
-                    return (int)(scoreRequirement * Config.CRankRequirement().Value);
+                    return (int)(scoreRequirement * (Config.CRankRequirement().Value / 100f));
                 case Ranking.B:
-                    return (int)(scoreRequirement * Config.BRankRequirement().Value);
+                    return (int)(scoreRequirement * (Config.BRankRequirement().Value / 100f));
                 case Ranking.A:
-                    return (int)(scoreRequirement * Config.ARankRequirement().Value);
+                    return (int)(scoreRequirement * (Config.ARankRequirement().Value / 100f));
                 case Ranking.S:
-                    return (int)(scoreRequirement * Config.SRankRequirement().Value);
+                    return (int)(scoreRequirement * (Config.SRankRequirement().Value / 100f));
             }
             return 0;
         }
