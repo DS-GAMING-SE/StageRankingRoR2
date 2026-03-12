@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine.Networking;
 
 namespace StageRanking
 {
@@ -19,16 +20,21 @@ namespace StageRanking
         // SceneExitController has an event for this but it's server only so it wouldn't work for a client-side mod
         public static void ShowRankingUI(On.RoR2.SceneExitController.orig_Begin orig, SceneExitController self)
         {
-            StageRankingTracker.CreateRanking(self);
+            if (NetworkServer.active) StageRankingTracker.CreateRanking(self);
             orig(self);
         }
         // Attempt at covering portals, which doesn't run SceneExitController for clients
+        // Before going to a new stage, this is run on host and client to load the next stage
+        // Gotta do all this weird stuff because base game has no global event for stage ending
         public static void ShowRankingUI2(On.RoR2.Networking.NetworkPreloadManager.orig_StartNewScenePreload_string_bool orig, string sceneName, bool idk)
         {
-            SceneDef sceneDef = SceneCatalog.FindSceneDef(sceneName);
-            if (sceneDef && sceneDef.sceneType != SceneType.Invalid && sceneDef.sceneType != SceneType.Menu && sceneDef.sceneType != SceneType.Junk && sceneDef.sceneType != SceneType.Cutscene)
+            if (!NetworkServer.active)
             {
-                StageRankingTracker.CreateRanking(null);
+                SceneDef sceneDef = SceneCatalog.FindSceneDef(sceneName);
+                if (sceneDef && sceneDef.sceneType != SceneType.Invalid && sceneDef.sceneType != SceneType.Menu && sceneDef.sceneType != SceneType.Junk && sceneDef.sceneType != SceneType.Cutscene)
+                {
+                    StageRankingTracker.CreateRanking(null);
+                }
             }
             orig(sceneName, idk);
         }

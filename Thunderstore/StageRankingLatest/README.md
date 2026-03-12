@@ -11,7 +11,7 @@ add a picture of the ui
 
 This mod is **highly configurable**. You can change things like how many points certain critera can give you and how many points are needed for certain ranks.
 
-The mod has **no impact on gameplay** with one tiny exception. It slightly extends the time it takes for the teleporter to take you out of each stage, but that can be disabled in the config. The mod is **client-side**, meaning you can have the mod even if the people you're playing with people who don't have it.
+The mod has **no impact on gameplay** with one tiny exception. It slightly extends the time it takes for the teleporter to take you out of each stage, but that can be disabled in the config by reducing the UI animation duration. The mod is **client-side**, meaning you can have the mod even if the people you're playing with people who don't have it.
 
 # Credits
 todo

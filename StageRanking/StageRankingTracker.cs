@@ -115,13 +115,7 @@ namespace StageRanking
     }
     public struct Score : IComparable<Score>
     {
-        /// <summary>
-        /// Name of the score
-        /// </summary>
         public string nameToken;
-        /// <summary>
-        /// Name of the score
-        /// </summary>
         public int score;
         /// <summary>
         /// How much this score raises the overall score requirement for reaching ranks. 

@@ -38,6 +38,7 @@ namespace StageRanking
         private float targetBarFill;
 
         private List<HGTextMeshProUGUI> ptsText;
+        public HGTextMeshProUGUI totalPtsText;
 
         private float timer;
 
@@ -45,6 +46,8 @@ namespace StageRanking
         public static Action<Ranking> OnStageRankingPanelEnd;
 
         public Ranking ranking;
+
+        public MusicTrackOverride musicTrackOverride;
 
         private RankingVisual rankingVisual;
         public Image rankingForeground;
@@ -57,7 +60,7 @@ namespace StageRanking
         public static void CreatePanel(List<Score> scores)
         {
             if (panelActive) return;
-            CreateDebugChatMessage(scores);
+            //CreateDebugChatMessage(scores);
             displayedScores = scores;
             overlayController = HudOverlayManager.AddGlobalOverlay(new OverlayCreationParams
             {
@@ -92,6 +95,7 @@ namespace StageRanking
                 totalScoreRequirement += item.addedScoreRequirement;
             }
             ranking = Util.GetRanking(totalScore, totalScoreRequirement);
+            totalPtsText.text = Util.PointsTextFormat(0);
             CalculateTargetBarFill();
             PrepareRanking(ranking);
         }
@@ -141,7 +145,11 @@ namespace StageRanking
                 case PanelState.BeforeStart:
                     break;
                 case PanelState.Start:
-                    if (Config.PlayMusic().Value) { RoR2.Util.PlaySound(panelMusicDef.soundString, gameObject); }
+                    if (Config.PlayMusic().Value) 
+                    {
+                        RoR2.Util.PlaySound(panelMusicDef.soundString, gameObject);
+                        musicTrackOverride.enabled = true;
+                    }
                     break;
                 case PanelState.Tallying:
                     break;
@@ -158,6 +166,7 @@ namespace StageRanking
                     {
                         sceneExitController.SetState(SceneExitController.ExitState.TeleportOut);
                     }
+                    musicTrackOverride.enabled = false;
                     break;
             }
         }
@@ -195,6 +204,7 @@ namespace StageRanking
                 ptsText[i].text = Util.PointsTextFormat(Math.Min((int)(displayedScores[i].score * percentOfMax),
                     Math.Max(displayedScores[i].score, displayedScores[i].addedScoreRequirement)));
             }
+            totalPtsText.text = Util.PointsTextFormat(Math.Min((int)(totalScore * percentOfMax), totalScore));
         }
         public void PrepareRanking(Ranking rank)
         {

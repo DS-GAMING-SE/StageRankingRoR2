@@ -42,6 +42,12 @@ namespace StageRanking
 
             panelPrefab = Addressables.LoadAssetAsync<GameObject>(panelAsset).WaitForCompletion();
             StageRankingPanel panelComponent = panelPrefab.AddComponent<StageRankingPanel>();
+            AssetAsyncReferenceManager<MusicTrackDef>.LoadAsset(new AssetReferenceT<MusicTrackDef>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_MusicTrackDefs.muNone_asset)).Completed += delegate (AsyncOperationHandle<MusicTrackDef> x)
+            {
+                panelComponent.musicTrackOverride = panelPrefab.AddComponent<MusicTrackOverride>();
+                panelComponent.musicTrackOverride.track = x.Result;
+                panelComponent.musicTrackOverride.enabled = false;
+            };
 
             panelComponent.rankingBackground = panelPrefab.transform.Find("RankingBackground").GetComponent<Image>();
             panelComponent.rankingForeground = panelComponent.rankingBackground.transform.GetChild(0).GetComponent<Image>();
@@ -87,6 +93,29 @@ namespace StageRanking
                 TranslucentImage originalBlur = container.Find("BlurPanel").GetComponent<TranslucentImage>();
                 blurPanel.material = originalBlur.material;
                 blurPanel.sprite = originalBlur.sprite;
+
+                Transform scoreFooter = panelPrefab.transform.Find("ScoreContainer/ScoreFooter");
+                GameObject scoreFooterTextObject = GameObject.Instantiate(container.Find("Stats Footer/TotalLabel").gameObject);
+                scoreFooterTextObject.transform.SetParent(scoreFooter.transform);
+                scoreFooterTextObject.transform.localPosition = Vector3.zero;
+                scoreFooterTextObject.transform.localEulerAngles = Vector3.zero;
+                scoreFooterTextObject.transform.localScale = Vector3.one;
+                (scoreFooterTextObject.transform as RectTransform).pivot = new Vector2(0.25f, 0.5f);
+                HGTextMeshProUGUI scoreFooterText = scoreFooterTextObject.GetComponent<HGTextMeshProUGUI>();
+                scoreFooterText.fontSizeMin = 12;
+                scoreFooterText.fontSize = 18;
+                scoreFooterText.fontSizeMax = 24;
+
+                GameObject scoreFooterPointsTextObject = GameObject.Instantiate(container.Find("Stats Footer/TotalPointsLabel").gameObject);
+                scoreFooterPointsTextObject.transform.SetParent(scoreFooter.transform);
+                scoreFooterPointsTextObject.transform.localPosition = Vector3.zero;
+                scoreFooterPointsTextObject.transform.localEulerAngles = Vector3.zero;
+                scoreFooterPointsTextObject.transform.localScale = Vector3.one;
+                (scoreFooterPointsTextObject.transform as RectTransform).pivot = new Vector2(0.75f, 0.5f);
+                panelComponent.totalPtsText = scoreFooterPointsTextObject.GetComponent<HGTextMeshProUGUI>();
+                panelComponent.totalPtsText.fontSizeMin = 12;
+                panelComponent.totalPtsText.fontSize = 18;
+                panelComponent.totalPtsText.fontSizeMax = 24;
             };
             AssetAsyncReferenceManager<GameObject>.LoadAsset(new AssetReferenceT<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.StatStripTemplate_prefab)).Completed += delegate (AsyncOperationHandle<GameObject> x)
             {
