@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace StageRanking
 {
@@ -14,9 +13,28 @@ namespace StageRanking
         public delegate void StageRankingEventHandler(List<Score> scores);
 
         public static event StageRankingEventHandler OnStageRankingGatherScores;
+
+        private static CharacterMaster master;
+        private static int itemsOnStageStart;
         public static void Initialize()
         {
             OnStageRankingGatherScores += DefaultScores;
+            Stage.onStageStartGlobal += StageStart;
+        }
+        private static void StageStart(Stage stage)
+        {
+            if (!master)
+            {
+                LocalUser localUser = LocalUserManager.GetFirstLocalUser();
+                if (localUser != null && localUser.cachedMaster && localUser.cachedMaster)
+                {
+                    master = localUser.cachedMaster;
+                }
+            }
+            if (master && master.inventory)
+            {
+                itemsOnStageStart = Util.GetItemCount(master.inventory);
+            }
         }
 
         private static void DefaultScores(List<Score> scores)
@@ -66,12 +84,28 @@ namespace StageRanking
                 numChests++;
                 if (item.isChestOpened) numOpenedChests++;
             }
+            int itemsOnStageEnd = 0;
+            if (master && master.inventory)
+            {
+                itemsOnStageEnd = Util.GetItemCount(master.inventory);
+            }
+
+            int lootScoreChests = 0;
+            int lootScoreNewItems = 0;
             if (numChests > 0)
+            {
+                lootScoreChests = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 1.5f);
+            }
+            if (itemsOnStageEnd - itemsOnStageStart > 0)
+            {
+                lootScoreNewItems = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)(itemsOnStageEnd - itemsOnStageStart)) / Config.ItemsPerStage().Value, 0.8f);
+            }
+            if (lootScoreChests > 0 || lootScoreNewItems > 0)
             {
                 scores.Add(new Score
                 {
                     nameToken = "DS_GAMING_STAGE_RANKING_LOOT_SCORE",
-                    score = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 1.5f),
+                    score = Math.Max(lootScoreNewItems, lootScoreChests),
                     addedScoreRequirement = Config.MaxLootScore().Value
                 });
             }
@@ -89,7 +123,8 @@ namespace StageRanking
 
         public static void CreateRanking(SceneExitController sceneExitController)
         {
-            if (StageRankingPanel.panelActive) return;
+            if (Config.stageBlacklist == null) Config.UpdateStageBlacklist(null, null);
+            if (StageRankingPanel.panelActive || (Stage.instance && Config.stageBlacklist.Contains(Stage.instance.sceneDef.cachedName))) return;
             List<Score> finalScores = new();
             if (OnStageRankingGatherScores != null)
             {

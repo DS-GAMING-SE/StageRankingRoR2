@@ -73,6 +73,23 @@ namespace StageRanking
             return Config.AnimationDuration().Value == Config.AnimationSpeed.Long;
             // Should check if host has the mod too. If they do and the animation speed is long, then client default can be long too. I don't know how to check that
         }
+
+        public static int GetItemCount(Inventory inventory)
+        {
+            int num = 0;
+            ItemIndex itemIndex = ItemIndex.Count;
+            ItemIndex itemCount = (ItemIndex)ItemCatalog.itemCount;
+            while (itemIndex < itemCount)
+            {
+                ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+                if (itemDef && itemDef.tier != ItemTier.NoTier && itemDef.tier != ItemTier.Lunar && itemDef.tier < ItemTier.AssignedAtRuntime && !itemDef.hidden)
+                {
+                    num += inventory.GetItemCountPermanent(itemIndex);
+                }
+                itemIndex++;
+            }
+            return num;
+        }
     }
     public enum Ranking
     {

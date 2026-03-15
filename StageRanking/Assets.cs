@@ -11,6 +11,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using RoR2.UI;
 using LeTai.Asset.TranslucentImage;
+using RoR2.Audio;
 
 namespace StageRanking
 {
@@ -20,6 +21,8 @@ namespace StageRanking
 
         public static GameObject panelPrefab;
         public static GameObject scoreStripPrefab;
+
+        public static LoopSoundDef tallyLoopSoundDef;
 
         public static RankingVisual dRanking;
         public static RankingVisual cRanking;
@@ -151,6 +154,12 @@ namespace StageRanking
             sRanking = new RankingVisual { foregroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItem),
                 foregroundSprite = sRankingSprite,
                 backgroundColor = ColorCatalog.GetColor(ColorCatalog.ColorIndex.BossItemDark)
+            };
+
+            tallyLoopSoundDef = new LoopSoundDef
+            {
+                startSoundName = "Play_stageranking_tally",
+                stopSoundName = "Stop_stageranking_tally"
             };
         }
     }

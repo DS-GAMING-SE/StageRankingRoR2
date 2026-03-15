@@ -23,6 +23,12 @@ namespace StageRanking
             return StageRankingPlugin.instance.Config.Bind<bool>("General", "Enable Music", true,
                 "Whether the ranking screen will play music.");
         }
+        public static string[] stageBlacklist;
+        public static ConfigEntry<string> StageBlacklist()
+        {
+            return StageRankingPlugin.instance.Config.Bind<string>("General", "Stage Blacklist", "bazaar, computationalexchange",
+                "Stages that should never have a ranking. By default, this includes Newt's Bazaar and SPEX's Computational Exchange.\n\nYou must put in the internal name of the stage. Use scene_list in the console to see the internal names of stages.");
+        }
         public enum AnimationSpeed
         {
             Default,
@@ -76,6 +82,11 @@ namespace StageRanking
             return StageRankingPlugin.instance.Config.Bind<int>("Loot Score", "Max Loot Score", 20000, 
                 "The maximum amount of score you can get from opening all chests in a stage.");
         }
+        public static ConfigEntry<int> ItemsPerStage()
+        {
+            return StageRankingPlugin.instance.Config.Bind<int>("Loot Score", "Items Per Stage", 10,
+                "A high estimate of the amount of items you're expected to get in a stage. Used for scenarios where the number of chests in the stage isn't a good indicator of the items you get, such as with Artifact of Sacrifice");
+        }
         #endregion
         #region Mountain Shrine
         public static ConfigEntry<int> ScorePerMountainShrine()
@@ -114,6 +125,8 @@ namespace StageRanking
             #region General
             ModSettingsManager.AddOption(new ChoiceOption(AnimationDuration()));
             ModSettingsManager.AddOption(new CheckBoxOption(PlayMusic()));
+            ModSettingsManager.AddOption(new StringInputFieldOption(StageBlacklist()));
+            StageBlacklist().SettingChanged += UpdateStageBlacklist;
             #endregion
             #region Time Score
             ModSettingsManager.AddOption(new IntFieldOption(MaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
@@ -149,6 +162,10 @@ namespace StageRanking
         public static void UpdateVeryLongStagesList(object sender, EventArgs args)
         {
             veryLongStages = Config.VeryLongStagesTimeScore().Value.Split(", ").ToArray();
+        }
+        public static void UpdateStageBlacklist(object sender, EventArgs args)
+        {
+            stageBlacklist = Config.StageBlacklist().Value.Split(", ").ToArray();
         }
     }
 }

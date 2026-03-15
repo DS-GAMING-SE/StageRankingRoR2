@@ -1,5 +1,6 @@
 ﻿using R2API;
 using RoR2;
+using RoR2.Audio;
 using RoR2.ContentManagement;
 using RoR2.HudOverlay;
 using RoR2.UI;
@@ -48,6 +49,7 @@ namespace StageRanking
         public Ranking ranking;
 
         public MusicTrackOverride musicTrackOverride;
+        private LoopSoundManager.SoundLoopPtr tallyLoopSound;
 
         private RankingVisual rankingVisual;
         public Image rankingForeground;
@@ -117,13 +119,16 @@ namespace StageRanking
                     }
                     break;
                 case PanelState.Tallying:
-                    if (timer <= panelMusicDef.timeUntilRankReveal)
+                    float fillPercent = Mathf.Clamp01((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
+                    SetBarFill(fillPercent);
+                    SetPtsValues(Mathf.Clamp01(fillPercent / targetBarFill));
+                    if (timer > panelMusicDef.timeUntilRankReveal || fillPercent >= targetBarFill)
                     {
-                        float fillPercent = Mathf.Clamp01((timer - panelStartPad - tallyStart) / (panelMusicDef.timeUntilRankReveal - tallyEndPad - panelStartPad - tallyStart));
-                        SetBarFill(fillPercent);
-                        SetPtsValues(Mathf.Clamp01(fillPercent/targetBarFill));
+                        SetState(PanelState.TallyFinished);
                     }
-                    else if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
+                    break;
+                case PanelState.TallyFinished:
+                    if (timer > panelMusicDef.timeUntilRankReveal + panelStartPad)
                     {
                         SetState(PanelState.Reveal);
                     }
@@ -152,6 +157,12 @@ namespace StageRanking
                     }
                     break;
                 case PanelState.Tallying:
+                    tallyLoopSound = LoopSoundManager.PlaySoundLoopLocal(base.gameObject, Assets.tallyLoopSoundDef);
+                    break;
+                case PanelState.TallyFinished:
+                    SetBarFill(1f);
+                    SetPtsValues(1f);
+                    LoopSoundManager.StopSoundLoopLocal(tallyLoopSound);
                     break;
                 case PanelState.Reveal:
                     rankingBackground.color = rankingVisual.backgroundColor;
@@ -257,6 +268,7 @@ namespace StageRanking
             BeforeStart,
             Start,
             Tallying,
+            TallyFinished,
             Reveal,
             End
         }
