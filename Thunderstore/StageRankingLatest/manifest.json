@@ -7,6 +7,7 @@
 		"bbepis-BepInExPack-5.4.2108",
 		"RiskofThunder-HookGenPatcher-1.2.3",
 		"RiskofThunder-R2API_Prefab-1.1.1",
-		"RiskofThunder-R2API_Language-1.0.0"
+		"RiskofThunder-R2API_Language-1.0.0",
+		"RiskofThunder-R2API_Sound-1.0.3"
 	]
 }

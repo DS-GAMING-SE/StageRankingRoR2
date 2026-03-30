@@ -41,7 +41,7 @@ namespace StageRanking
         // Prevents the SceneExitController from beginning to teleport all players away until after the StageRankingPanel is no longer active
         public static void DelaySceneExit(On.RoR2.SceneExitController.orig_SetState orig, SceneExitController self, SceneExitController.ExitState newState)
         {
-            if (self.exitState != newState && newState == SceneExitController.ExitState.TeleportOut && StageRankingPanel.panelActive)
+            if (Util.GetIsAnimationSpeedLong() && self.exitState != newState && newState == SceneExitController.ExitState.TeleportOut && StageRankingPanel.panelActive)
             {
                 return;
             }

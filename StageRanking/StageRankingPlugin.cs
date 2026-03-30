@@ -7,7 +7,8 @@ using UnityEngine.AddressableAssets;
 namespace StageRanking
 {
     [BepInDependency(LanguageAPI.PluginGUID)]
-
+    [BepInDependency(PrefabAPI.PluginGUID)]
+    [BepInDependency("com.bepis.r2api.sound")]
 
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     [R2API.Utils.NetworkCompatibility(R2API.Utils.CompatibilityLevel.NoNeedForSync)]

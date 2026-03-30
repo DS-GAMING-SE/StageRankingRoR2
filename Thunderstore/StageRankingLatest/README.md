@@ -7,7 +7,7 @@ This mod adds a small results screen to the end of every stage, giving you a ran
 | Loot | How many chests are opened. |
 | Mountain Shrine | How many mountain shrines are activated. |
 
-add a picture of the ui
+<img src="https://github.com/DS-GAMING-SE/StageRankingRoR2/blob/master/READMEImage.jpg?raw=true">
 
 This mod is **highly configurable**. You can change things like how many points certain critera can give you and how many points are needed for certain ranks.
 

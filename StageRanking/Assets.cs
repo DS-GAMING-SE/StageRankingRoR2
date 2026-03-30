@@ -37,6 +37,7 @@ namespace StageRanking
         public static AssetReferenceSprite bRankingSprite = new AssetReferenceSprite("b5a33a91a6f7a9845913b0fcc0d35913");
         public static AssetReferenceSprite aRankingSprite = new AssetReferenceSprite("ee8acb6cef497bd4d919e1ae27fb891e");
         public static AssetReferenceSprite sRankingSprite = new AssetReferenceSprite("2d827acc23a9baa4bbc476a98c26c8cd");
+        public static AssetReferenceSprite modIconSprite = new AssetReferenceSprite("a9559615091d45340be2eb3ce501d8d0");
         #endregion
         internal static void Initialize()
         {

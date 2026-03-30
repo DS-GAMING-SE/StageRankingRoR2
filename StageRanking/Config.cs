@@ -7,6 +7,7 @@ using UnityEngine;
 using RiskOfOptions;
 using RiskOfOptions.Options;
 using System.Linq;
+using UnityEngine.AddressableAssets;
 
 namespace StageRanking
 {
@@ -16,7 +17,7 @@ namespace StageRanking
         public static ConfigEntry<AnimationSpeed> AnimationDuration()
         {
             return StageRankingPlugin.instance.Config.Bind<AnimationSpeed>("General", "Animation Duration", AnimationSpeed.Default,
-                "How long it will take for the UI to tally up and display the final score.\n\nWhen using the long animation while you're singleplayer/host, it may increase the time it takes for the teleporter to activate to make sure the full animation has time to play.\nWhen set to Default, it will attempt to play the long animation, but will fallback to the short one in multiplayer situations where the teleporter cannot be delayed.");
+                "How long it will take for the UI to tally up and display the final score.\n\nUsing the long animation while you're singleplayer/host may increase the time it takes for the teleporter to activate, giving the animation time to finish.\nWhen set to Default, it will attempt to play the long animation, but will fallback to the short one in multiplayer situations where the teleporter cannot be delayed.");
         }
         public static ConfigEntry<bool> PlayMusic()
         {
@@ -55,7 +56,7 @@ namespace StageRanking
         }
         public static ConfigEntry<string> LongStagesTimeScore()
         {
-            return StageRankingPlugin.instance.Config.Bind<string>("Time Score", "Long Stages", "rootjungle, dampcavesimple, shipgraveyard, repurposedcrater",
+            return StageRankingPlugin.instance.Config.Bind<string>("Time Score", "Long Stages", "rootjungle, dampcavesimple, shipgraveyard, repurposedcrater, tropics_wormsworms, tropicsnight_wormsworms",
                 "Stages that are expected to take longer than normal, giving you more time to get a good time score. By default, this includes all stage 4s.\n\nYou must put in the internal name of the stage. Use scene_list in the console to see the internal names of stages.");
         }
         public static string[] longStages;
@@ -121,7 +122,10 @@ namespace StageRanking
         #region Risk Of Options
         public static void RiskOfOptionsSetup()
         {
-            //ModSettingsManager.SetModIcon(Assets.mainAssetBundle.LoadAsset<Sprite>("texSuperBuffIcon"));
+            Addressables.LoadAssetAsync<Sprite>(Assets.modIconSprite).Completed += (x) =>
+            {
+                ModSettingsManager.SetModIcon(x.Result);
+            };
             #region General
             ModSettingsManager.AddOption(new ChoiceOption(AnimationDuration()));
             ModSettingsManager.AddOption(new CheckBoxOption(PlayMusic()));

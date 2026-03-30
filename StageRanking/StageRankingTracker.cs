@@ -16,6 +16,7 @@ namespace StageRanking
 
         private static CharacterMaster master;
         private static int itemsOnStageStart;
+        private static bool stageHasChests;
         public static void Initialize()
         {
             OnStageRankingGatherScores += DefaultScores;
@@ -35,6 +36,7 @@ namespace StageRanking
             {
                 itemsOnStageStart = Util.GetItemCount(master.inventory);
             }
+            stageHasChests = InstanceTracker.GetInstancesList<ChestBehavior>().Any();
         }
 
         private static void DefaultScores(List<Score> scores)
@@ -77,46 +79,51 @@ namespace StageRanking
             // ..keeping track even if the interactable is deleted by Drifter. I don't think there's a sane way to do this
             // Probably missing other interactables that would make sense, but whatever. The score isn't linear, so it's hard for people to tell exactly how many interactables were..
             // ..counted based on the score alone, so no one will notice how scuffed this is, probably :)
-            int numChests = 0;
-            int numOpenedChests = 0;
-            foreach (var item in InstanceTracker.GetInstancesList<ChestBehavior>())
+            if (stageHasChests)
             {
-                numChests++;
-                if (item.isChestOpened) numOpenedChests++;
-            }
-            int itemsOnStageEnd = 0;
-            if (master && master.inventory)
-            {
-                itemsOnStageEnd = Util.GetItemCount(master.inventory);
-            }
-
-            int lootScoreChests = 0;
-            int lootScoreNewItems = 0;
-            if (numChests > 0)
-            {
-                lootScoreChests = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 1.5f);
-            }
-            if (itemsOnStageEnd - itemsOnStageStart > 0)
-            {
-                lootScoreNewItems = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)(itemsOnStageEnd - itemsOnStageStart)) / Config.ItemsPerStage().Value, 0.8f);
-            }
-            if (lootScoreChests > 0 || lootScoreNewItems > 0)
-            {
-                scores.Add(new Score
+                int numChests = 0;
+                int numOpenedChests = 0;
+                foreach (var item in InstanceTracker.GetInstancesList<ChestBehavior>())
                 {
-                    nameToken = "DS_GAMING_STAGE_RANKING_LOOT_SCORE",
-                    score = Math.Max(lootScoreNewItems, lootScoreChests),
-                    addedScoreRequirement = Config.MaxLootScore().Value
-                });
-            }
-            #endregion
-            #region Mountain Shrine Score
-            if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator)
-            {
-                scores.Add(new Score { nameToken = "DS_GAMING_STAGE_RANKING_MOUNTAIN_SHRINE_SCORE", 
-                    score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic((TeleporterInteraction.instance.shrineBonusStacks + (TeleporterInteraction.instance.NetworkshowAccessCodesIndicator ? 1 : 0))/ 2f)),
-                    addedScoreRequirement = 0
-                });
+                    numChests++;
+                    if (item.isChestOpened) numOpenedChests++;
+                }
+                int itemsOnStageEnd = 0;
+                if (master && master.inventory)
+                {
+                    itemsOnStageEnd = Util.GetItemCount(master.inventory);
+                }
+
+                int lootScoreChests = 0;
+                int lootScoreNewItems = 0;
+                if (numChests > 0)
+                {
+                    lootScoreChests = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)numOpenedChests) / numChests, 1.5f);
+                }
+                if (itemsOnStageEnd - itemsOnStageStart > 0)
+                {
+                    lootScoreNewItems = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)(itemsOnStageEnd - itemsOnStageStart)) / Config.ItemsPerStage().Value, 0.8f);
+                }
+                if (lootScoreChests > 0 || lootScoreNewItems > 0)
+                {
+                    scores.Add(new Score
+                    {
+                        nameToken = "DS_GAMING_STAGE_RANKING_LOOT_SCORE",
+                        score = Math.Max(lootScoreNewItems, lootScoreChests),
+                        addedScoreRequirement = Config.MaxLootScore().Value
+                    });
+                }
+                #endregion
+                #region Mountain Shrine Score
+                if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator)
+                {
+                    scores.Add(new Score
+                    {
+                        nameToken = "DS_GAMING_STAGE_RANKING_MOUNTAIN_SHRINE_SCORE",
+                        score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic((TeleporterInteraction.instance.shrineBonusStacks + (TeleporterInteraction.instance.NetworkshowAccessCodesIndicator ? 1 : 0)) / 2f)),
+                        addedScoreRequirement = 0
+                    });
+                }
             }
             #endregion
         }

@@ -41,6 +41,10 @@ MonoBehaviour:
     m_Address: Assets/Rankings/texRankingBIcon.png
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: a9559615091d45340be2eb3ce501d8d0
+    m_Address: Assets/icon.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: b5516040b9928b94daa8ce2480ea16ce, type: 2}
   m_SchemaSet:

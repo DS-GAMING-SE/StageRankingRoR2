@@ -27,7 +27,7 @@ namespace StageRanking
         public static PanelMusicDefCombo defaultPanelMusicDef = new(
             new PanelMusicDef("Play_stageranking_default_music", 4.8f, 7.5f),
             new PanelMusicDef("Play_stageranking_default_music_short", 2.1f, 4f));
-        public static PanelMusicDefCombo[] overridePanelMusicDefs = [];
+        public static List<PanelMusicDefCombo> overridePanelMusicDefs = new List<PanelMusicDefCombo>();
         public const float panelStartPad = 0.5f;
         public const float tallyStartPadPercent = 0.2f;
         private float tallyStart;
@@ -246,7 +246,7 @@ namespace StageRanking
         }
         public static PanelMusicDef GetPanelMusicDef()
         {
-            if (overridePanelMusicDefs.Length > 0)
+            if (overridePanelMusicDefs.Count > 0)
             {
                 LocalUser user = LocalUserManager.GetFirstLocalUser();
                 if (user != null && user.cachedMaster)
