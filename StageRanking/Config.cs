@@ -42,7 +42,7 @@ namespace StageRanking
         public static ConfigEntry<int> MaxTimeScore()
         {
             return StageRankingPlugin.instance.Config.Bind<int>("Time Score", "Max Time Score", 20000,
-                "The maximum amount of score you can get from beating the stage quickly.");
+                "The maximum amount of score you can get from beating the stage quickly. Setting this value to 0 will disable this score.");
         }
         public static ConfigEntry<int> TimeForMaxTimeScore()
         {
@@ -80,20 +80,20 @@ namespace StageRanking
         #region Loot Score
         public static ConfigEntry<int> MaxLootScore()
         {
-            return StageRankingPlugin.instance.Config.Bind<int>("Loot Score", "Max Loot Score", 20000, 
-                "The maximum amount of score you can get from opening all chests in a stage.");
+            return StageRankingPlugin.instance.Config.Bind<int>("Loot Score", "Max Loot Score", 20000,
+                "The maximum amount of score you can get from opening all chests in a stage. Setting this value to 0 will disable this score.");
         }
         public static ConfigEntry<int> ItemsPerStage()
         {
             return StageRankingPlugin.instance.Config.Bind<int>("Loot Score", "Items Per Stage", 10,
-                "A high estimate of the amount of items you're expected to get in a stage. Used for scenarios where the number of chests in the stage isn't a good indicator of the items you get, such as with Artifact of Sacrifice");
+                "A high estimate of the amount of items you're expected to get in a stage. Used for scenarios where the number of chests in the stage isn't a good indicator of the items you get, such as with Artifact of Sacrifice.");
         }
         #endregion
         #region Mountain Shrine
         public static ConfigEntry<int> ScorePerMountainShrine()
         {
             return StageRankingPlugin.instance.Config.Bind<int>("Mountain Score", "Score Per Mountain Shrine", 2500,
-                "The amount of score you get for the first mountain shrine stack you have. Subsequent mountain shrine stacks will gradually give less score.");
+                "The amount of score you get for the first mountain shrine stack you have. Subsequent mountain shrine stacks will gradually give less score. Setting this value to 0 will disable this score.");
         }
         #endregion
         #region Ranking
@@ -133,7 +133,7 @@ namespace StageRanking
             StageBlacklist().SettingChanged += UpdateStageBlacklist;
             #endregion
             #region Time Score
-            ModSettingsManager.AddOption(new IntFieldOption(MaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
+            ModSettingsManager.AddOption(new IntFieldOption(MaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 0 }));
             ModSettingsManager.AddOption(new IntFieldOption(TimeForMaxTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
             ModSettingsManager.AddOption(new IntFieldOption(TimeForMinTimeScore(), new RiskOfOptions.OptionConfigs.IntFieldConfig() { Min = 60 }));
             ModSettingsManager.AddOption(new StringInputFieldOption(LongStagesTimeScore()));

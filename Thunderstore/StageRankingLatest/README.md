@@ -4,14 +4,14 @@ This mod adds a small results screen to the end of every stage, giving you a ran
 | Score | Description |
 | ---- | ---- |
 | Time | How quickly you beat the stage. |
-| Loot | How many chests are opened. |
+| Loot | How many chests are opened or how many items you've collected. |
 | Mountain Shrine | How many mountain shrines are activated. |
 
 <img src="https://github.com/DS-GAMING-SE/StageRankingRoR2/blob/master/READMEImage.jpg?raw=true">
 
 This mod is **highly configurable**. You can change things like how many points certain critera can give you and how many points are needed for certain ranks.
 
-The mod has **no impact on gameplay** with one tiny exception. It slightly extends the time it takes for the teleporter to take you out of each stage, but that can be disabled in the config by reducing the UI animation duration. The mod is **client-side**, meaning you can have the mod even if the people you're playing with don't have it.
+The mod has no impact on gameplay with one tiny exception. It slightly extends the time it takes for the teleporter to take you out of each stage so the animation has time to play. That can be disabled in the config by reducing the animation duration. The mod is **client-side**, meaning you can have the mod even if the people you're playing with don't have it.
 
 # Credits
 | Name | Platform | Contribution |

@@ -1,4 +1,5 @@
 ﻿using RoR2;
+using RoR2.Artifacts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace StageRanking
         }
         private static void StageStart(Stage stage)
         {
+            stageHasChests = false;
+            stageHasChests = StageHasChests();
             if (!master)
             {
                 LocalUser localUser = LocalUserManager.GetFirstLocalUser();
@@ -32,17 +35,28 @@ namespace StageRanking
                     master = localUser.cachedMaster;
                 }
             }
-            if (master && master.inventory)
+            if (stageHasChests && master && master.inventory)
             {
                 itemsOnStageStart = Util.GetItemCount(master.inventory);
             }
-            stageHasChests = InstanceTracker.GetInstancesList<ChestBehavior>().Any();
+        }
+        private static bool StageHasChests()
+        {
+            if (ClassicStageInfo.instance && ClassicStageInfo.instance.sceneDirectorInteractibleCredits > 0 && ClassicStageInfo.instance.interactableCategories && ClassicStageInfo.instance.interactableCategories.FindCategoryIndexByName("Chests") != -1)
+            {
+                return true;
+            }
+            else
+            {
+                return InstanceTracker.GetInstancesList<ChestBehavior>().FirstOrDefault(chest =>
+                chest.TryGetComponent<PurchaseInteraction>(out var purchaseInteraction) && (purchaseInteraction.costType == CostTypeIndex.Money || purchaseInteraction.costType == CostTypeIndex.PercentHealth));
+            }
         }
 
         private static void DefaultScores(List<Score> scores)
         {
             #region Time Score
-            if (Run.instance && Stage.instance && Stage.instance.entryStopwatchValue != Run.instance.GetRunStopwatch())
+            if (Run.instance && Stage.instance && Stage.instance.entryStopwatchValue != Run.instance.GetRunStopwatch() && Config.MaxTimeScore().Value > 0)
             {
                 if (Config.TimeForMaxTimeScore().Value < Config.TimeForMinTimeScore().Value)
                 {
@@ -79,14 +93,17 @@ namespace StageRanking
             // ..keeping track even if the interactable is deleted by Drifter. I don't think there's a sane way to do this
             // Probably missing other interactables that would make sense, but whatever. The score isn't linear, so it's hard for people to tell exactly how many interactables were..
             // ..counted based on the score alone, so no one will notice how scuffed this is, probably :)
-            if (stageHasChests)
+            if (stageHasChests && Config.MaxLootScore().Value > 0)
             {
                 int numChests = 0;
                 int numOpenedChests = 0;
                 foreach (var item in InstanceTracker.GetInstancesList<ChestBehavior>())
                 {
-                    numChests++;
-                    if (item.isChestOpened) numOpenedChests++;
+                    if (item.TryGetComponent<PurchaseInteraction>(out var purchaseInteraction) && (purchaseInteraction.costType == CostTypeIndex.Money || purchaseInteraction.costType == CostTypeIndex.PercentHealth))
+                    {
+                        numChests++;
+                        if (item.isChestOpened) numOpenedChests++;
+                    }
                 }
                 int itemsOnStageEnd = 0;
                 if (master && master.inventory)
@@ -104,7 +121,7 @@ namespace StageRanking
                 {
                     lootScoreNewItems = Util.ClampedNonlinearLerp(0, Config.MaxLootScore().Value, ((float)(itemsOnStageEnd - itemsOnStageStart)) / Config.ItemsPerStage().Value, 0.8f);
                 }
-                if (lootScoreChests > 0 || lootScoreNewItems > 0)
+                if (numChests > 0 || lootScoreNewItems > 0)
                 {
                     scores.Add(new Score
                     {
@@ -115,7 +132,7 @@ namespace StageRanking
                 }
                 #endregion
                 #region Mountain Shrine Score
-                if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator)
+                if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator && Config.ScorePerMountainShrine().Value > 0)
                 {
                     scores.Add(new Score
                     {
