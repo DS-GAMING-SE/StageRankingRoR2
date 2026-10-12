@@ -1,6 +1,6 @@
 ﻿{
 	"name": "StageRanking",
-	"version_number": "1.0.0",
+	"version_number": "1.1.0",
 	"website_url": "https://github.com/DS-GAMING-SE/StageRankingRoR2",
 	"description": "Receive a letter rank and fanfare at the end of each stage based on your performance",
 	"dependencies": [

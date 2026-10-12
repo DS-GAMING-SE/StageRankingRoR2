@@ -132,12 +132,12 @@ namespace StageRanking
                 }
                 #endregion
                 #region Mountain Shrine Score
-                if (TeleporterInteraction.instance && TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator && Config.ScorePerMountainShrine().Value > 0)
+                if (TeleporterInteraction.instance && (TeleporterInteraction.instance.shrineBonusStacks > 0 || TeleporterInteraction.instance.NetworkshowAccessCodesIndicator || TeleporterInteraction.instance.hexBonusStacks > 0) && Config.ScorePerMountainShrine().Value > 0)
                 {
                     scores.Add(new Score
                     {
                         nameToken = "DS_GAMING_STAGE_RANKING_MOUNTAIN_SHRINE_SCORE",
-                        score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic((TeleporterInteraction.instance.shrineBonusStacks + (TeleporterInteraction.instance.NetworkshowAccessCodesIndicator ? 1 : 0)) / 2f)),
+                        score = (int)Math.Floor(Config.ScorePerMountainShrine().Value * 3 * RoR2.Util.Hyperbolic((TeleporterInteraction.instance.shrineBonusStacks + (TeleporterInteraction.instance.NetworkshowAccessCodesIndicator ? 1 : 0) + TeleporterInteraction.instance.hexBonusStacks) / 2f)),
                         addedScoreRequirement = 0
                     });
                 }

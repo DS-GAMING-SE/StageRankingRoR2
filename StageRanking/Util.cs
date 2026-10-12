@@ -77,12 +77,13 @@ namespace StageRanking
         public static int GetItemCount(Inventory inventory)
         {
             int num = 0;
-            ItemIndex itemIndex = ItemIndex.Count;
+            ItemIndex itemIndex = ItemIndex.None + 1;
             ItemIndex itemCount = (ItemIndex)ItemCatalog.itemCount;
             while (itemIndex < itemCount)
             {
                 ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
-                if (itemDef && itemDef.tier != ItemTier.NoTier && itemDef.tier != ItemTier.Lunar && itemDef.tier < ItemTier.AssignedAtRuntime && !itemDef.hidden)
+                if (itemDef && ((itemDef.tier != ItemTier.NoTier && itemDef.tier != ItemTier.Lunar && itemDef.tier != ItemTier.Hex && itemDef.tier != ItemTier.Page && itemDef.tier < ItemTier.AssignedAtRuntime && !itemDef.hidden)
+                    || itemDef == DLC1Content.Items.RegeneratingScrapConsumed || itemDef == DLC2Content.Items.LowerPricedChestsConsumed || itemDef == DLC2Content.Items.TeleportOnLowHealthConsumed))
                 {
                     num += inventory.GetItemCountPermanent(itemIndex);
                 }

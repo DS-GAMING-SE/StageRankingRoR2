@@ -17,7 +17,7 @@ namespace StageRanking
         public const string PluginGUID = "com."+PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "StageRanking";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
 
         public static StageRankingPlugin instance;
 
